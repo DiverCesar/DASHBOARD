@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reclama tu Llave de Steam</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050508;
+            --primary: #00f3ff;
+            --secondary: #ff0055;
+            --winner: #00ff00;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .container {
+            background: rgba(10, 10, 15, 0.9);
+            border: 2px solid var(--primary);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 { color: var(--primary); margin-bottom: 20px; text-transform: uppercase; }
+
+        /* VISTA FORMULARIO */
+        #view-form input {
+            width: 100%; padding: 15px; font-size: 18px;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--primary);
+            color: #fff; margin-bottom: 20px; border-radius: 5px; text-align: center;
+        }
+        #view-form input:focus { outline: none; box-shadow: 0 0 15px var(--primary); }
+
+        .btn {
+            padding: 15px 30px; font-size: 18px; font-weight: bold;
+            cursor: pointer; border: none; border-radius: 5px; width: 100%; margin-bottom: 10px;
+            text-transform: uppercase; transition: 0.3s;
+        }
+        .btn-submit { background: var(--primary); color: #000; }
+        .btn-submit:hover { box-shadow: 0 0 20px var(--primary); }
+        
+        .btn-cancel { background: transparent; border: 1px solid var(--secondary); color: var(--secondary); }
+        .btn-cancel:hover { background: var(--secondary); color: #fff; box-shadow: 0 0 20px var(--secondary); }
+
+        /* VISTA DASHBOARD */
+        #view-dash { display: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { color: var(--primary); }
+        
+        /* LOS 2 PRIMEROS (GANADORES) */
+        .winner { color: var(--winner); font-weight: bold; text-shadow: 0 0 10px var(--winner); }
+        .winner td { border-bottom: 1px solid var(--winner); }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="view-form">
+        <h1>Escribe tu nickname de Steam</h1>
+        <p style="margin-bottom: 20px; color: #aaa;">Los 2 más rápidos se llevan la llave.</p>
+        <input type="text" id="nickname" placeholder="Tu usuario de Steam..." autocomplete="off">
+        <button class="btn btn-submit" onclick="submitName()">Enviar</button>
+        <button class="btn btn-cancel" onclick="showDashboard()">Cancelar / Ver Tabla</button>
+    </div>
+
+    <div class="container" id="view-dash">
+        <h1>Registro de Supervivientes</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th># Rango</th>
+                    <th>Nickname Steam</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const viewForm = document.getElementById('view-form');
+        const viewDash = document.getElementById('view-dash');
+        const tableBody = document.getElementById('table-body');
+        
+        // ==========================================
+        // SISTEMA DE BASE DE DATOS (Supabase / LocalFallback)
+        // ==========================================
+        
+        /* SEÑOR: Si tiene 2 minutos, descomente esto y ponga sus credenciales de Supabase.
+           Debe tener una tabla llamada 'ganadores_steam' con una columna 'nickname'.
+        
+        const supabaseUrl = 'TU_URL_DE_SUPABASE';
+        const supabaseKey = 'TU_ANON_KEY';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        */
+
+        // Base de datos de emergencia (Solo funciona localmente si no usa Supabase)
+        let localData = []; 
+
+        function showDashboard() {
+            viewForm.style.display = 'none';
+            viewDash.style.display = 'block';
+            loadData();
+            // Actualizar la tabla cada segundo
+            setInterval(loadData, 1000); 
+        }
+
+        async function submitName() {
+            const nameInput = document.getElementById('nickname');
+            const name = nameInput.value.trim();
+            if(!name) return;
+
+            // 1. SI USA SUPABASE (Descomentar):
+            // await supabase.from('ganadores_steam').insert([{ nickname: name }]);
+            
+            // 2. MODO EMERGENCIA LOCAL:
+            localData.push({ nickname: name });
+
+            nameInput.value = '';
+            showDashboard();
+        }
+
+        async function loadData() {
+            let dataToShow = [];
+
+            // 1. SI USA SUPABASE (Descomentar):
+            // const { data, error } = await supabase.from('ganadores_steam').select('*').order('created_at', { ascending: true });
+            // if(data) dataToShow = data;
+
+            // 2. MODO EMERGENCIA LOCAL:
+            dataToShow = localData;
+
+            tableBody.innerHTML = '';
+            
+            dataToShow.forEach((row, index) => {
+                let tr = document.createElement('tr');
+                
+                // Si son los 2 primeros, se pintan de verde victoria
+                if(index < 2) {
+                    tr.className = 'winner';
+                }
+                
+                tr.innerHTML = `
+                    <td>${index + 1} ${index < 2 ? '🏆' : ''}</td>
+                    <td>${row.nickname}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
