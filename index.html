@@ -100,74 +100,58 @@
     
     <script>
         const viewForm = document.getElementById('view-form');
-        const viewDash = document.getElementById('view-dash');
-        const tableBody = document.getElementById('table-body');
+const viewDash = document.getElementById('view-dash');
+const tableBody = document.getElementById('table-body');
+
+// 1. PEGA TU URL Y TU ANON KEY AQUÍ:
+const supabaseUrl = 'TU_URL_DE_SUPABASE';
+const supabaseKey = 'TU_ANON_KEY';
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+function showDashboard() {
+    viewForm.style.display = 'none';
+    viewDash.style.display = 'block';
+    loadData();
+    setInterval(loadData, 2000); // Se actualiza cada 2 segundos
+}
+
+async function submitName() {
+    const nameInput = document.getElementById('nickname');
+    const name = nameInput.value.trim();
+    if(!name) return;
+
+    // INSERTA EN LA BASE DE DATOS
+    await supabaseClient.from('ganadores_steam').insert([{ nickname: name }]);
+
+    nameInput.value = '';
+    showDashboard();
+}
+
+async function loadData() {
+    // LEE DE LA BASE DE DATOS (Ordenado por el ID o fecha de creación)
+    const { data, error } = await supabaseClient.from('ganadores_steam').select('*').order('id', { ascending: true });
+    
+    if(error) {
+        console.error("Error de Supabase:", error);
+        return;
+    }
+
+    tableBody.innerHTML = '';
+    
+    data.forEach((row, index) => {
+        let tr = document.createElement('tr');
         
-        // ==========================================
-        // SISTEMA DE BASE DE DATOS (Supabase / LocalFallback)
-        // ==========================================
+        if(index < 2) {
+            tr.className = 'winner';
+        }
         
-        /* SEÑOR: Si tiene 2 minutos, descomente esto y ponga sus credenciales de Supabase.
-           Debe tener una tabla llamada 'ganadores_steam' con una columna 'nickname'.
-        
-        const supabaseUrl = 'TU_URL_DE_SUPABASE';
-        const supabaseKey = 'TU_ANON_KEY';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-        */
-
-        // Base de datos de emergencia (Solo funciona localmente si no usa Supabase)
-        let localData = []; 
-
-        function showDashboard() {
-            viewForm.style.display = 'none';
-            viewDash.style.display = 'block';
-            loadData();
-            // Actualizar la tabla cada segundo
-            setInterval(loadData, 1000); 
-        }
-
-        async function submitName() {
-            const nameInput = document.getElementById('nickname');
-            const name = nameInput.value.trim();
-            if(!name) return;
-
-            // 1. SI USA SUPABASE (Descomentar):
-            // await supabase.from('ganadores_steam').insert([{ nickname: name }]);
-            
-            // 2. MODO EMERGENCIA LOCAL:
-            localData.push({ nickname: name });
-
-            nameInput.value = '';
-            showDashboard();
-        }
-
-        async function loadData() {
-            let dataToShow = [];
-
-            // 1. SI USA SUPABASE (Descomentar):
-            // const { data, error } = await supabase.from('ganadores_steam').select('*').order('created_at', { ascending: true });
-            // if(data) dataToShow = data;
-
-            // 2. MODO EMERGENCIA LOCAL:
-            dataToShow = localData;
-
-            tableBody.innerHTML = '';
-            
-            dataToShow.forEach((row, index) => {
-                let tr = document.createElement('tr');
-                
-                // Si son los 2 primeros, se pintan de verde victoria
-                if(index < 2) {
-                    tr.className = 'winner';
-                }
-                
-                tr.innerHTML = `
-                    <td>${index + 1} ${index < 2 ? '🏆' : ''}</td>
-                    <td>${row.nickname}</td>
-                `;
-                tableBody.appendChild(tr);
-            });
-        }
+        tr.innerHTML = `
+            <td>${index + 1} ${index < 2 ? '🏆' : ''}</td>
+            <td>${row.nickname}</td>
+        `;
+        tableBody.appendChild(tr);
+    });
+}
     </script>
 </body>
 </html>
