@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reclama tu Llave de Steam</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link ref="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/3840px-Steam_icon_logo.svg.png">
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/3840px-Steam_icon_logo.svg.png">
     <style>
         :root {
             --bg-dark: #050508;
@@ -68,7 +68,7 @@
         th, td { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         th { color: var(--primary); }
         
-        /* LOS 2 PRIMEROS (GANADORES) */
+        /* EL GANADOR */
         .winner { color: var(--winner); font-weight: bold; text-shadow: 0 0 10px var(--winner); }
         .winner td { border-bottom: 1px solid var(--winner); }
     </style>
@@ -77,10 +77,10 @@
 
     <div class="container" id="view-form">
         <h1>Escribe tu nickname de Steam</h1>
-        <p style="margin-bottom: 20px; color: #aaa;">Los 2 más rápidos se llevan la llave.</p>
+        <p style="margin-bottom: 20px; color: #aaa;">¡El primero a la llave!</p>
         <input type="text" id="nickname" placeholder="Tu usuario de Steam..." autocomplete="off">
         <button class="btn btn-submit" onclick="submitName()">Enviar</button>
-        <button class="btn btn-cancel" onclick="showDashboard()">Cancelar / Ver Tabla</button>
+        <button class="btn btn-cancel" onclick="showDashboard()">Cancelar</button>
     </div>
 
     <div class="container" id="view-dash">
@@ -140,12 +140,12 @@
             data.forEach((row, index) => {
                 let tr = document.createElement('tr');
                 
-                if(index < 2) {
+                if(index < 1) {
                     tr.className = 'winner';
                 }
                 
                 tr.innerHTML = `
-                    <td>${index + 1} ${index < 2 ? '🏆' : ''}</td>
+                    <td>${index + 1} ${index < 1 ? '🏆' : ''}</td>
                     <td>${row.nickname}</td>
                 `;
                 tableBody.appendChild(tr);
